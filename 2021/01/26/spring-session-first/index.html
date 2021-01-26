@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.css">
+  <script src="//cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.js"></script>
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"skyxim.com","root":"/","images":"/images","scheme":"Muse","version":"8.1.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}};
+  </script>
+<meta name="description" content="Spring Session基于Spring的Session透明三方集中管理框架，可以简单的实现Session的分布式管理，并且对现有项目的代码做到的良好的透明化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Session初见">
+<meta property="og:url" content="http://skyxim.com/2021/01/26/spring-session-first/index.html">
+<meta property="og:site_name" content="Skyxim&#39;s Blog">
+<meta property="og:description" content="Spring Session基于Spring的Session透明三方集中管理框架，可以简单的实现Session的分布式管理，并且对现有项目的代码做到的良好的透明化">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://skyxim.com/2021/01/26/spring-session-first/spring-session-first/image-20210125231242503.png">
+<meta property="article:published_time" content="2021-01-26T14:04:24.000Z">
+<meta property="article:modified_time" content="2021-01-26T14:40:15.575Z">
+<meta property="article:author" content="天心">
+<meta property="article:tag" content="学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://skyxim.com/2021/01/26/spring-session-first/spring-session-first/image-20210125231242503.png">
+
+
+<link rel="canonical" href="http://skyxim.com/2021/01/26/spring-session-first/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+<title>Spring Session初见 | Skyxim's Blog</title>
+  
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Skyxim's Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">I/O</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Spring-Session%E5%88%9D%E8%A7%81"><span class="nav-number">1.</span> <span class="nav-text">Spring Session初见</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#HttpSession"><span class="nav-number">1.1.</span> <span class="nav-text">HttpSession</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Cookie-amp-Session"><span class="nav-number">1.1.1.</span> <span class="nav-text">Cookie&amp;Session</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9FSession"><span class="nav-number">1.1.2.</span> <span class="nav-text">传统Session</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9FSession%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.3.</span> <span class="nav-text">传统Session的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8FSession%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">1.1.4.</span> <span class="nav-text">分布式Session解决方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Session"><span class="nav-number">1.2.</span> <span class="nav-text">Spring Session</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Spring-Session%E4%BD%BF%E7%94%A8%E2%80%94%E2%80%94%E5%9F%BA%E4%BA%8ERedis"><span class="nav-number">1.2.1.</span> <span class="nav-text">Spring Session使用——基于Redis</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E4%BE%9D%E8%B5%96"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">添加依赖</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Redis%E5%BA%8F%E5%88%97%E5%8C%96%E6%96%B9%E5%BC%8F"><span class="nav-number">1.2.1.3.</span> <span class="nav-text">Redis序列化方式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9B%86%E6%88%90Spring-Security%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">1.2.2.</span> <span class="nav-text">集成Spring Security遇到的问题</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">天心</p>
+  <div class="site-description" itemprop="description">输出才是学习的意义</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://skyxim.com/2021/01/26/spring-session-first/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="天心">
+      <meta itemprop="description" content="输出才是学习的意义">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Skyxim's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring Session初见
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2021-01-26 22:04:24 / 修改时间：22:40:15" itemprop="dateCreated datePublished" datetime="2021-01-26T22:04:24+08:00">2021-01-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Spring-Java-Kotlin/" itemprop="url" rel="index"><span itemprop="name">Spring Java Kotlin</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <blockquote>
+<p>Spring Session基于Spring的Session透明三方集中管理框架，可以简单的实现Session的分布式管理，并且对现有项目的代码做到的良好的透明化</p>
+</blockquote>
+<a id="more"></a> 
+
+<h1 id="Spring-Session初见"><a href="#Spring-Session初见" class="headerlink" title="Spring Session初见"></a>Spring Session初见</h1><h2 id="HttpSession"><a href="#HttpSession" class="headerlink" title="HttpSession"></a>HttpSession</h2><h3 id="Cookie-amp-Session"><a href="#Cookie-amp-Session" class="headerlink" title="Cookie&amp;Session"></a>Cookie&amp;Session</h3><p>提到Session不得不提到Cookie，由于HTTP的无状态性，无法将同一个用户的多次请求关联，所以网景员工Lou Montulli将Cookie用于网络，解决用户添加购物车的商品记录问题。Cookie保存于客户端（浏览器中），保存简短的用户信息。</p>
+<p>Session——会话，用于创建用户于服务器之间的关联关系的机制，Session的概念在计算机领域被广泛使用，在网络协议中更是许多协议的重要组成。相对于Cookie将信息存储在客户端，Session保存于服务器中具有更高的安全性，但是由于需要存储大量的客户信息同时也会带来内存和存储的压力。</p>
+<p>所以Session和Cookie并不是一对相关联的东西，初学时我认为它们本就是一对相关联的东西。其实只是为了解决HTTP下的用户状态，利用Cookie存储SessionId用于在服务器存储的Session中找到对应的Session，从而维持用户状态。</p>
+<h3 id="传统Session"><a href="#传统Session" class="headerlink" title="传统Session"></a>传统Session</h3><p>传统的Session一般由容器管理(如：Tomcat、Jetty)，Java中使用一个HttpSession的接口来规定的Session所具有的行为，只要基于这个接口，那么就是Java Servlet所认可的Session</p>
+<h3 id="传统Session的问题"><a href="#传统Session的问题" class="headerlink" title="传统Session的问题"></a>传统Session的问题</h3><p>由于互联网的发展，为了更加高效的处理请求，从单机的服务器应用转变成多应用、分布式甚至集群的方式。导致使用单个容器管理Session的机制无法满足需求，当跨应用访问时无法简单的获取的已登陆用户的Session。所以需要共享Session，当然各个容器也有自己的共享、复制等Session的解决方案。但是往往存在比较大的弊端。</p>
+<h3 id="分布式Session解决方案"><a href="#分布式Session解决方案" class="headerlink" title="分布式Session解决方案"></a>分布式Session解决方案</h3><ol>
+<li><p>Session复制</p>
+<p>既然不同容器没有Session无法维持状态，那么就每个容器都保存一份Session，当用户访问时产生Session后通过容器的实现，将Session同步复制到其他容器之中，以保证容器都持有一份用户的Session。但是也有很大问题，最直观的就是由于复制导致大量占用存储，而且在不同容器之间复制还需要占用大量的带宽。还有可能存在不及时的问题</p>
+</li>
+<li><p>Session粘滞</p>
+<p>让用户永远只访问初次访问记录着Session的服务器，通过负载均衡，可以存在不同的策略将用户定向到固定的服务器，比如访问者IP、唯一身份ID的Hash等等，不会大量的存在副本也没有占用大量的带宽，相当于对于一个用户来说这个应用变成单机了。但是存在扩展设备时需要修改负载均衡的策略，而被定向到新的设备的用户登录状态会丢失，而且并不能完全预估出用户的访问频率对服务器造成的压力，会可能导致单机时的瓶颈问题</p>
+</li>
+<li><p>基于Cookies/自包含Token</p>
+<p>基于Cookies，将用户信息全部存储在Cookies中，后端对前端的数据都应该保持不信任态度，所以需要配合加密使用，防止数据盗取和篡改。这种方案好处时将存储压力分散到用户，服务器不需要存储用户信息。但是大量的用户信息在请求时也会占据一定程度的带宽。所以不应该保存过多的用户信息在Cookies中（也保存不了多少Cookies有限制），但是由于Cookies不再受到后端管理，所以一旦签发无法简单收回，具有一定的控制安全隐患，可以使用黑名单方式解决。这个方案有一个较为流行的实现JWT（Json Web Token），他是基于Json的Token标准。通过数字签名的方式保证信息没有被篡改。但是不保证数据泄漏的问题，所以不能在其中包含敏感数据</p>
+</li>
+<li><p>集中式管理Session</p>
+<p>将Session的存储从容器中剥离出来，利用第三方存储（MySQL、Redis…）进行保存，需要的服务从中获取对应的Session。相对于使用基于前端保存的方案，这个虽然会增加后端的存储压力，但是更加的安全，并且功能集中管理用户登录状态</p>
+</li>
+</ol>
+<h2 id="Spring-Session"><a href="#Spring-Session" class="headerlink" title="Spring Session"></a>Spring Session</h2><p>Spring Session即是第四种方案，将Session存储从容器中剥离，存放到别处，并且通过一个最优先的Filter，让其Web应用无感的透明集成分布式Session方案。Spring Session默认实现了多种存储Session的方案，比如：Redis、JDBC、MangoDB等等，也可以通过他提供个的接口实现自己的存储方案</p>
+<h3 id="Spring-Session使用——基于Redis"><a href="#Spring-Session使用——基于Redis" class="headerlink" title="Spring Session使用——基于Redis"></a>Spring Session使用——基于Redis</h3><h4 id="添加依赖"><a href="#添加依赖" class="headerlink" title="添加依赖"></a>添加依赖</h4><p>首先需要引入<code>org.springframework.session:spring-session-data-redis</code>依赖，由于这个依赖了<code>org.springframework.session:spring-session-core</code>所以也会同时加入spring-session-core。然后由于使用Redis所以还需要添加<code>org.springframework.boot:spring-boot-starter-data-redis</code>的依赖用于连接Redis</p>
+<h4 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h4><p>首先<a target="_blank" rel="noopener" href="https://docs.spring.io/spring-session/docs/2.4.2/reference/html5/#httpsession-spring-configuration">官方文档</a>中Java 配置已经明确指出了如何配置，大概如下：</p>
+<ol>
+<li>首先创建一个类用于声明Redis的ConnectionFactory的Bean，并且使用@EnableRedisHttpSession 注解启动基于Redis的Spring Session的HttpSession</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableRedisHttpSession</span> </span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Config</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Bean</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> LettuceConnectionFactory <span class="title">connectionFactory</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> LettuceConnectionFactory(); </span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>然后创建一个实现了WebApplicationInitializer的类，这里使用的是Spring Session Core中提供的一个工具类，只需要调用父类构造传入第一步的Config的类。由于是实现于WebApplicationInitializer，在Servlet3.0规定中，这个类将会在Web容器启动时将会通过SPI被传入SpringServletContainerInitializer</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Initializer</span> <span class="keyword">extends</span> <span class="title">AbstractHttpSessionApplicationInitializer</span> </span>&#123; </span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Initializer</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">super</span>(Config.class); </span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上是Java Configuration的配置，代码取自<a target="_blank" rel="noopener" href="https://docs.spring.io/spring-session/docs/2.4.2/reference/html5/#httpsession-spring-configuration">官方文档</a></p>
+<p><strong>而Spring Boot，拥有除了web.xml和Servlet3.0方式以外，当内嵌Tomcat将会走一套完全不同的启动流程，可以省略WebApplicationInitializer（完全不会去执行），所以在Spring Boot项目中在引入Redis的boot依赖后，会默认提供ConnectionFactory，然后被注入到RedisHttpSessionConfiguration#setRedisConnectionFactory，完成集成</strong></p>
+<p><strong>所以在正常的项目只需要在配置类上使用@EnableRedisHttpSession 开启Spring Session</strong></p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//SpringSessionApplication.kt</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableRedisHttpSession</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SpringSessionApplication</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">main</span><span class="params">(args: <span class="type">Array</span>&lt;<span class="type">String</span>&gt;)</span></span> &#123;</span><br><span class="line">    runApplication&lt;SpringSessionApplication&gt;(*args)</span><br><span class="line">&#125;</span><br><span class="line">--------------------------------------</span><br><span class="line"><span class="comment">//application.properties</span></span><br><span class="line">spring.redis.host=locahost</span><br><span class="line">spring.redis.password=yourpassword</span><br><span class="line">spring.redis.port=<span class="number">6379</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h4 id="Redis序列化方式"><a href="#Redis序列化方式" class="headerlink" title="Redis序列化方式"></a>Redis序列化方式</h4><p>在<code>spring-boot-starter-data-redis</code>默认采用了JDK序列化作为默认的序列化器。但是不能跨语言，并且没有可读性，创建的还是使用Json进行序列化存储。所以需要修改Redis的序列化器。这里我使用的Spring Boot自带的Jackson</p>
+<p>Redis的序列化则需要给RedisTemplate设置序列化器。但是Spring Session Data Redis的内部创建，但是提供了一个注入序列化器的入口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//RedisHttpSessionConfiguration.java</span></span><br><span class="line"><span class="meta">@Autowired(required = false)</span></span><br><span class="line">	<span class="meta">@Qualifier(&quot;springSessionDefaultRedisSerializer&quot;)</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setDefaultRedisSerializer</span><span class="params">(RedisSerializer&lt;Object&gt; defaultRedisSerializer)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.defaultRedisSerializer = defaultRedisSerializer;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这个方法需要一个RedisSerializer<Object>的序列化器，这就比较简单了只需要在创建一个RedisSerializer<Object>的Bean</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableRedisHttpSession</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SessionConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean(<span class="meta-string">&quot;springSessionDefaultRedisSerializer&quot;</span>)</span><span class="comment">//注意，需要填写springSessionDefaultRedisSerializer</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">redisSerializer</span><span class="params">()</span></span>: RedisSerializer&lt;Any&gt; &#123;</span><br><span class="line">        <span class="keyword">return</span> GenericJackson2JsonRedisSerializer(objectMapper())</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">objectMapper</span><span class="params">()</span></span>:ObjectMapper&#123;</span><br><span class="line">        <span class="keyword">val</span> objectMapper=ObjectMapper()</span><br><span class="line"><span class="comment">//      objectMapper.registerModule(CoreJackson2Module())</span></span><br><span class="line"><span class="comment">//      objectMapper.registerModule(WebJackson2Module())</span></span><br><span class="line">        <span class="keyword">return</span> objectMapper</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里我简单的创建了个Redis序列化器的Bean，注入了一个ObjectMapper对象</p>
+<p>以上完成了Redis使用Json序列化</p>
+<h3 id="集成Spring-Security遇到的问题"><a href="#集成Spring-Security遇到的问题" class="headerlink" title="集成Spring Security遇到的问题"></a>集成Spring Security遇到的问题</h3><p>最后说说自己在集成Spring Security时遇到的问题，其实是Spring Security和Jackson之间的问题</p>
+<p>由于序列化器使用的Jackson，按理说直接序列化和反序列化我的Authentication相关对象，或者反序列化，但是在登录，并且Redis中存在Session下出现了这样的错误</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">org.springframework.expression.spel.SpelEvaluationException: EL1008E: Property or field &#x27;authentication&#x27; cannot be found on object of type &#x27;java.util.LinkedHashMap&#x27; - maybe not public or not valid?</span><br><span class="line">	at org.springframework.expression.spel.ast.PropertyOrFieldReference.readProperty(PropertyOrFieldReference.java:<span class="number">217</span>) ~[spring-expression<span class="number">-5.2</span><span class="number">.3</span>.RELEASE.jar:<span class="number">5.2</span><span class="number">.3</span>.RELEASE]</span><br><span class="line">	at org.springframework.expression.spel.ast.PropertyOrFieldReference.getValueInternal(PropertyOrFieldReference.java:<span class="number">104</span>) ~[spring-expression<span class="number">-5.2</span><span class="number">.3</span>.RELEASE.jar:<span class="number">5.2</span><span class="number">.3</span>.RELEASE]</span><br><span class="line">...</span><br><span class="line">	at org.springframework.expression.spel.standard.SpelExpression.getValue(SpelExpression.java:<span class="number">242</span>) ~[spring-expression<span class="number">-5.2</span><span class="number">.3</span>.RELEASE.jar:<span class="number">5.2</span><span class="number">.3</span>.RELEASE]</span><br><span class="line">	at org.springframework.session.PrincipalNameIndexResolver.resolveIndexValueFor(PrincipalNameIndexResolver.java:<span class="number">49</span>) ~[spring-session-core<span class="number">-2.2</span><span class="number">.0</span>.RELEASE.jar:<span class="number">2.2</span><span class="number">.0</span>.RELEASE]</span><br><span class="line">	at org.springframework.session.SingleIndexResolver.resolveIndexesFor(SingleIndexResolver.java:<span class="number">48</span>) ~[spring-session-core<span class="number">-2.2</span><span class="number">.0</span>.RELEASE.jar:<span class="number">2.2</span><span class="number">.0</span>.RELEASE]</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+<p>大概就是LinkedHaseMap没有authentication的字段，这不是废话么，但是不是应该给我反序列化成Authentication对象么，为什么是个Map，于是在上面报错中的进入Spel相关类之前的最后一个类PrincipalNameIndexResolver的报错之前追加了一个断点，可以看到，并没有反序列化成一个对象，真的只是一个Map</p>
+<p><img src="spring-session-first/image-20210125231242503.png" alt="image-20210125231242503"></p>
+<p>原因是Security提供的这些类部分不存在无参构造，导致无法反序列化，Security也提供了解决的方案，使用Jackson的Mix方法，简化代码Security默认在包中已经提供了相关Jackson的Module，<strong>CoreJackson2Module</strong>和<strong>WebJackson2Module</strong>，用于将注解混合到原本类上，帮助Jackson反序列化</p>
+<p>只需要在反序列化所需要用的objectMapper中注册这两个模块</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">	<span class="comment">//SessionConfig.kt</span></span><br><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">objectMapper</span><span class="params">()</span></span>:ObjectMapper&#123;</span><br><span class="line">       <span class="keyword">val</span> objectMapper=ObjectMapper()</span><br><span class="line">       objectMapper.registerModule(CoreJackson2Module())</span><br><span class="line">       objectMapper.registerModule(WebJackson2Module())</span><br><span class="line">       <span class="keyword">return</span> objectMapper</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>​        </p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>天心
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="http://skyxim.com/2021/01/26/spring-session-first/" title="Spring Session初见">http://skyxim.com/2021/01/26/spring-session-first/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0/" rel="tag"># 学习</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/01/01/new-start/" rel="prev" title="开篇">
+                  <i class="fa fa-chevron-left"></i> 开篇
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">天心</span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+  <script>
+    NProgress.configure({
+      showSpinner: true
+    });
+    NProgress.start();
+    document.addEventListener('readystatechange', () => {
+      if (document.readyState === 'interactive') {
+        NProgress.inc(0.8);
+      }
+      if (document.readyState === 'complete') {
+        NProgress.done();
+      }
+    });
+    document.addEventListener('pjax:send', () => {
+      NProgress.start();
+    });
+    document.addEventListener('pjax:success', () => {
+      NProgress.done();
+    });
+  </script>
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+</body>
+</html>
